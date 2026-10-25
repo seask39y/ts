@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorldTools</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+        
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s ease;
+        }
+        
+        .screen.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        
+        #screen1 .title {
+            font-size: 44px;
+            font-weight: 300;
+            letter-spacing: 10px;
+            color: #fff;
+            opacity: 0;
+            transform: translateY(-30px);
+            transition: all 1s ease;
+            text-shadow: 
+                0 0 10px rgba(255,255,255,0.8),
+                0 0 20px rgba(255,255,255,0.5),
+                0 0 40px rgba(0,212,255,0.4),
+                0 0 80px rgba(123,47,247,0.3);
+        }
+        
+        #screen1 .title.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .bar-container {
+            position: relative;
+            width: 320px;
+            height: 3px;
+            margin-top: 32px;
+            transform: scaleX(0);
+            transform-origin: center;
+            will-change: transform;
+            transition: transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        .bar-container.show {
+            transform: scaleX(1);
+        }
+        
+        .gradient-bar {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff 0%, #7b2ff7 50%, #ff00cc 100%);
+            border-radius: 2px;
+            box-shadow: 
+                0 0 10px rgba(0,212,255,0.8),
+                0 0 20px rgba(123,47,247,0.6),
+                0 0 40px rgba(255,0,204,0.4);
+        }
+        
+        .star {
+            position: absolute;
+            top: 50%;
+            width: 32px;
+            height: 32px;
+            transform: translateY(-50%) scale(0);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .star.show {
+            opacity: 1;
+            transform: translateY(-50%) scale(1);
+            animation: rotateStar 3s linear infinite;
+        }
+        
+        .star.left { left: -16px; }
+        .star.right { right: -16px; }
+        
+        .star svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 8px rgba(0,212,255,0.9)) drop-shadow(0 0 16px rgba(123,47,247,0.6));
+        }
+        
+        @keyframes rotateStar {
+            from { transform: translateY(-50%) scale(1) rotate(0deg); }
+            to { transform: translateY(-50%) scale(1) rotate(360deg); }
+        }
+        
+        
+        .progress-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .progress-track {
+            width: 320px;
+            height: 10px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 
+                inset 0 0 8px rgba(0,0,0,0.5),
+                0 0 10px rgba(0,212,255,0.1);
+        }
+        
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff 0%, #00ff88 100%);
+            border-radius: 5px;
+            box-shadow: 
+                0 0 10px rgba(0,212,255,0.6),
+                0 0 20px rgba(0,255,136,0.4);
+            will-change: width;
+            transition: none;
+        }
+        
+        .progress-percent {
+            font-size: 28px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            color: #fff;
+            text-shadow: 
+                0 0 10px rgba(0,212,255,0.8),
+                0 0 20px rgba(0,255,136,0.5);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.6s ease;
+        }
+        
+        .progress-percent.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .loading-text {
+            font-size: 14px;
+            letter-spacing: 6px;
+            color: rgba(255,255,255,0.7);
+            text-shadow: 0 0 8px rgba(0,212,255,0.4);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.6s ease;
+        }
+        
+        .loading-text.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        
+        #screen3 .subtitle {
+            font-size: 24px;
+            font-weight: 400;
+            text-align: center;
+            line-height: 2.2;
+            letter-spacing: 3px;
+            color: #fff;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 1s ease;
+            max-width: 85%;
+            text-shadow: 
+                0 0 10px rgba(255,255,255,0.9),
+                0 0 20px rgba(255,255,255,0.6),
+                0 0 40px rgba(0,212,255,0.4),
+                0 0 80px rgba(123,47,247,0.3);
+        }
+        
+        #screen3 .subtitle.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        #screen3 .bar-container {
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 1s ease;
+        }
+        
+        .buttons.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .btn {
+            display: block;
+            width: 260px;
+            padding: 16px 0;
+            text-align: center;
+            color: #fff;
+            text-decoration: none;
+            font-size: 18px;
+            letter-spacing: 6px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 8px rgba(255,255,255,0.8);
+        }
+        
+        .btn-blue {
+            background: linear-gradient(135deg, #00d4ff 0%, #7b2ff7 50%, #ff00cc 100%);
+            border: none;
+            box-shadow: 
+                0 0 15px rgba(0,212,255,0.5),
+                0 0 30px rgba(123,47,247,0.3),
+                0 4px 15px rgba(0,0,0,0.3);
+            animation: btnPulse 2s ease-in-out infinite alternate;
+        }
+        
+        .btn-blue:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 
+                0 0 25px rgba(0,212,255,0.8),
+                0 0 50px rgba(123,47,247,0.5),
+                0 0 80px rgba(255,0,204,0.3),
+                0 6px 25px rgba(0,0,0,0.3);
+        }
+        
+        .btn-transparent {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(0,212,255,0.5);
+            color: #fff;
+            box-shadow: 
+                0 0 10px rgba(0,212,255,0.2),
+                inset 0 0 15px rgba(0,212,255,0.05);
+        }
+        
+        .btn-transparent:hover {
+            background: rgba(0,212,255,0.1);
+            border-color: rgba(0,212,255,0.9);
+            box-shadow: 
+                0 0 20px rgba(0,212,255,0.4),
+                0 0 40px rgba(123,47,247,0.2),
+                inset 0 0 20px rgba(0,212,255,0.1);
+            transform: translateY(-3px) scale(1.02);
+        }
+        
+        @keyframes btnPulse {
+            from {
+                box-shadow: 
+                    0 0 15px rgba(0,212,255,0.5),
+                    0 0 30px rgba(123,47,247,0.3);
+            }
+            to {
+                box-shadow: 
+                    0 0 25px rgba(0,212,255,0.7),
+                    0 0 50px rgba(123,47,247,0.5),
+                    0 0 80px rgba(255,0,204,0.2);
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="screen1" class="screen active">
+        <div class="title" id="title1">WorldTools</div>
+        <div class="bar-container" id="bar1">
+            <div class="star left" id="star1-left">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2 L22 19 L2 19 Z" fill="#00d4ff"/>
+                    <path d="M12 22 L22 5 L2 5 Z" fill="#7b2ff7"/>
+                </svg>
+            </div>
+            <div class="gradient-bar"></div>
+            <div class="star right" id="star1-right">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2 L22 19 L2 19 Z" fill="#00d4ff"/>
+                    <path d="M12 22 L22 5 L2 5 Z" fill="#7b2ff7"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+    
+    
+    <div id="screen2" class="screen">
+        <div class="progress-wrapper">
+            <div class="progress-percent" id="percent2">0%</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progress2"></div>
+            </div>
+            <div class="loading-text" id="loading2">加载中</div>
+        </div>
+    </div>
+    
+    <!-- 界面3：主界面 -->
+    <div id="screen3" class="screen">
+        <div class="subtitle" id="subtitle3">
+            world box重新定义我的世界工具箱<br>
+            我的世界我做主
+        </div>
+        <div class="bar-container" id="bar3">
+            <div class="star left" id="star3-left">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2 L22 19 L2 19 Z" fill="#00d4ff"/>
+                    <path d="M12 22 L22 5 L2 5 Z" fill="#7b2ff7"/>
+                </svg>
+            </div>
+            <div class="gradient-bar"></div>
+            <div class="star right" id="star3-right">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2 L22 19 L2 19 Z" fill="#00d4ff"/>
+                    <path d="M12 22 L22 5 L2 5 Z" fill="#7b2ff7"/>
+                </svg>
+            </div>
+        </div>
+        <div class="buttons" id="buttons3">
+            <a href="https://o.8x.fit/shop/Redandroid.Worldbox" class="btn btn-blue" target="_blank">购买卡密点我</a>
+            <a href="https://1846534480.share.123pan.cn/123pan/mViyTd-43d4d" class="btn btn-transparent" target="_blank">下载</a>
+        </div>
+    </div>
+    
+    <script>
+        
+        setTimeout(() => {
+            document.getElementById('title1').classList.add('show');
+        }, 300);
+        
+        setTimeout(() => {
+            document.getElementById('bar1').classList.add('show');
+        }, 1800);
+        
+        setTimeout(() => {
+            document.getElementById('star1-left').classList.add('show');
+            document.getElementById('star1-right').classList.add('show');
+        }, 2000);
+        
+        
+        setTimeout(() => {
+            document.getElementById('screen1').classList.remove('active');
+            document.getElementById('screen2').classList.add('active');
+            
+            
+            setTimeout(() => {
+                document.getElementById('percent2').classList.add('show');
+                document.getElementById('loading2').classList.add('show');
+                
+                const progressEl = document.getElementById('progress2');
+                const percentEl = document.getElementById('percent2');
+                
+                const duration = 1900;
+                const startTime = performance.now();
+                
+                function updateProgress(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const value = Math.floor(progress * 100);
+                    
+                    progressEl.style.width = value + '%';
+                    percentEl.textContent = value + '%';
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(updateProgress);
+                    } else {
+                        progressEl.style.width = '100%';
+                        percentEl.textContent = '100%';
+                    }
+                }
+                requestAnimationFrame(updateProgress);
+            }, 300);
+            
+            
+            setTimeout(() => {
+                document.getElementById('screen2').classList.remove('active');
+                document.getElementById('screen3').classList.add('active');
+                
+                
+                setTimeout(() => {
+                    document.getElementById('subtitle3').classList.add('show');
+                }, 300);
+                
+                setTimeout(() => {
+                    document.getElementById('bar3').classList.add('show');
+                }, 1800);
+                
+                setTimeout(() => {
+                    document.getElementById('star3-left').classList.add('show');
+                    document.getElementById('star3-right').classList.add('show');
+                    document.getElementById('buttons3').classList.add('show');
+                }, 1950);
+            }, 2500); 
+        }, 4200); 
+    </script>
+</body>
+</html>
