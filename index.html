@@ -1,427 +1,1221 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WorldTools</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            background: #000;
-            color: #fff;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            overflow: hidden;
-            height: 100vh;
-            width: 100vw;
-        }
-        
-        .screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.8s ease;
-        }
-        
-        .screen.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-        
-        
-        #screen1 .title {
-            font-size: 44px;
-            font-weight: 300;
-            letter-spacing: 10px;
-            color: #fff;
-            opacity: 0;
-            transform: translateY(-30px);
-            transition: all 1s ease;
-            text-shadow: 
-                0 0 10px rgba(255,255,255,0.8),
-                0 0 20px rgba(255,255,255,0.5),
-                0 0 40px rgba(0,212,255,0.4),
-                0 0 80px rgba(123,47,247,0.3);
-        }
-        
-        #screen1 .title.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        .bar-container {
-            position: relative;
-            width: 320px;
-            height: 3px;
-            margin-top: 32px;
-            transform: scaleX(0);
-            transform-origin: center;
-            will-change: transform;
-            transition: transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-        
-        .bar-container.show {
-            transform: scaleX(1);
-        }
-        
-        .gradient-bar {
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, #00d4ff 0%, #7b2ff7 50%, #ff00cc 100%);
-            border-radius: 2px;
-            box-shadow: 
-                0 0 10px rgba(0,212,255,0.8),
-                0 0 20px rgba(123,47,247,0.6),
-                0 0 40px rgba(255,0,204,0.4);
-        }
-        
-        .star {
-            position: absolute;
-            top: 50%;
-            width: 32px;
-            height: 32px;
-            transform: translateY(-50%) scale(0);
-            opacity: 0;
-            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        
-        .star.show {
-            opacity: 1;
-            transform: translateY(-50%) scale(1);
-            animation: rotateStar 3s linear infinite;
-        }
-        
-        .star.left { left: -16px; }
-        .star.right { right: -16px; }
-        
-        .star svg {
-            width: 100%;
-            height: 100%;
-            filter: drop-shadow(0 0 8px rgba(0,212,255,0.9)) drop-shadow(0 0 16px rgba(123,47,247,0.6));
-        }
-        
-        @keyframes rotateStar {
-            from { transform: translateY(-50%) scale(1) rotate(0deg); }
-            to { transform: translateY(-50%) scale(1) rotate(360deg); }
-        }
-        
-        
-        .progress-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-        }
-        
-        .progress-track {
-            width: 320px;
-            height: 10px;
-            background: rgba(255,255,255,0.08);
-            border-radius: 5px;
-            overflow: hidden;
-            box-shadow: 
-                inset 0 0 8px rgba(0,0,0,0.5),
-                0 0 10px rgba(0,212,255,0.1);
-        }
-        
-        .progress-fill {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, #00d4ff 0%, #00ff88 100%);
-            border-radius: 5px;
-            box-shadow: 
-                0 0 10px rgba(0,212,255,0.6),
-                0 0 20px rgba(0,255,136,0.4);
-            will-change: width;
-            transition: none;
-        }
-        
-        .progress-percent {
-            font-size: 28px;
-            font-weight: 300;
-            letter-spacing: 2px;
-            color: #fff;
-            text-shadow: 
-                0 0 10px rgba(0,212,255,0.8),
-                0 0 20px rgba(0,255,136,0.5);
-            opacity: 0;
-            transform: translateY(10px);
-            transition: all 0.6s ease;
-        }
-        
-        .progress-percent.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        .loading-text {
-            font-size: 14px;
-            letter-spacing: 6px;
-            color: rgba(255,255,255,0.7);
-            text-shadow: 0 0 8px rgba(0,212,255,0.4);
-            opacity: 0;
-            transform: translateY(10px);
-            transition: all 0.6s ease;
-        }
-        
-        .loading-text.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        
-        #screen3 .subtitle {
-            font-size: 24px;
-            font-weight: 400;
-            text-align: center;
-            line-height: 2.2;
-            letter-spacing: 3px;
-            color: #fff;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 1s ease;
-            max-width: 85%;
-            text-shadow: 
-                0 0 10px rgba(255,255,255,0.9),
-                0 0 20px rgba(255,255,255,0.6),
-                0 0 40px rgba(0,212,255,0.4),
-                0 0 80px rgba(123,47,247,0.3);
-        }
-        
-        #screen3 .subtitle.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        #screen3 .bar-container {
-            margin-top: 40px;
-            margin-bottom: 40px;
-        }
-        
-        .buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-            align-items: center;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 1s ease;
-        }
-        
-        .buttons.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        .btn {
-            display: block;
-            width: 260px;
-            padding: 16px 0;
-            text-align: center;
-            color: #fff;
-            text-decoration: none;
-            font-size: 18px;
-            letter-spacing: 6px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-shadow: 0 0 8px rgba(255,255,255,0.8);
-        }
-        
-        .btn-blue {
-            background: linear-gradient(135deg, #00d4ff 0%, #7b2ff7 50%, #ff00cc 100%);
-            border: none;
-            box-shadow: 
-                0 0 15px rgba(0,212,255,0.5),
-                0 0 30px rgba(123,47,247,0.3),
-                0 4px 15px rgba(0,0,0,0.3);
-            animation: btnPulse 2s ease-in-out infinite alternate;
-        }
-        
-        .btn-blue:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 
-                0 0 25px rgba(0,212,255,0.8),
-                0 0 50px rgba(123,47,247,0.5),
-                0 0 80px rgba(255,0,204,0.3),
-                0 6px 25px rgba(0,0,0,0.3);
-        }
-        
-        .btn-transparent {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(0,212,255,0.5);
-            color: #fff;
-            box-shadow: 
-                0 0 10px rgba(0,212,255,0.2),
-                inset 0 0 15px rgba(0,212,255,0.05);
-        }
-        
-        .btn-transparent:hover {
-            background: rgba(0,212,255,0.1);
-            border-color: rgba(0,212,255,0.9);
-            box-shadow: 
-                0 0 20px rgba(0,212,255,0.4),
-                0 0 40px rgba(123,47,247,0.2),
-                inset 0 0 20px rgba(0,212,255,0.1);
-            transform: translateY(-3px) scale(1.02);
-        }
-        
-        @keyframes btnPulse {
-            from {
-                box-shadow: 
-                    0 0 15px rgba(0,212,255,0.5),
-                    0 0 30px rgba(123,47,247,0.3);
-            }
-            to {
-                box-shadow: 
-                    0 0 25px rgba(0,212,255,0.7),
-                    0 0 50px rgba(123,47,247,0.5),
-                    0 0 80px rgba(255,0,204,0.2);
-            }
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>世界盒子 WorldBox — 轻量 · 流畅 · 强大 | 跨时代产物</title>
+<meta name="description" content="世界盒子 WorldBox v1.2.6 全新架构来袭。不止是工具，更是体验革命。百种功能、稳定流畅，官方级售后服务保障你的使用体验。支持Android、IOS系统" />
+<link rel="icon" href="assets/favicon.png" />
+<style>
+/* ============================================================
+   世界盒子 WorldBox — Redesigned 2026
+   自包含单文件版本 · 深色玻璃质感设计系统
+   ============================================================ */
+:root{
+  --bg:#07090d;
+  --bg-2:#0b0f16;
+  --bg-3:#101623;
+  --glass:rgba(255,255,255,.045);
+  --glass-brd:rgba(255,255,255,.09);
+  --txt:#eef2f7;
+  --txt-2:#9aa7b8;
+  --txt-3:#5d6b7d;
+  --green:#34d399;
+  --green-2:#10b981;
+  --blue:#60a5fa;
+  --orange:#fb923c;
+  --purple:#a78bfa;
+  --cyan:#22d3ee;
+  --pink:#f472b6;
+  --grad:linear-gradient(120deg,#34d399 0%,#22d3ee 45%,#a78bfa 100%);
+  --radius:18px;
+  --nav-h:72px;
+  --font:'PingFang SC','HarmonyOS Sans SC','Microsoft YaHei',-apple-system,BlinkMacSystemFont,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--txt);
+  line-height:1.7;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(52,211,153,.35)}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+.container{width:min(1180px,92%);margin:0 auto}
+
+/* ---------- 滚动条 ---------- */
+::-webkit-scrollbar{width:10px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:#1e2a3a;border-radius:99px;border:2px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:#2c3d55}
+
+/* ---------- 通用玻璃卡片 ---------- */
+.glass{
+  background:var(--glass);
+  border:1px solid var(--glass-brd);
+  border-radius:var(--radius);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+}
+
+/* ---------- 按钮 ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  padding:13px 26px;border-radius:14px;
+  font-size:15px;font-weight:600;letter-spacing:.02em;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s,background .25s,border-color .25s;
+  will-change:transform;
+}
+.btn svg{flex-shrink:0}
+.btn:active{transform:scale(.96)}
+.btn-primary{
+  background:var(--grad);color:#04110c;
+  box-shadow:0 8px 28px rgba(52,211,153,.35),inset 0 1px 0 rgba(255,255,255,.35);
+}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(52,211,153,.45)}
+.btn-ghost{
+  background:rgba(255,255,255,.05);color:var(--txt);
+  border:1px solid rgba(255,255,255,.14);
+}
+.btn-ghost:hover{transform:translateY(-3px);background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25)}
+.btn-lg{padding:17px 40px;font-size:17px;border-radius:16px}
+.btn-full{width:100%}
+.btn-download{background:linear-gradient(120deg,#f59e0b,#fb923c);color:#1a0e00;box-shadow:0 8px 24px rgba(251,146,60,.3)}
+.btn-download:hover{transform:translateY(-3px);box-shadow:0 14px 36px rgba(251,146,60,.45)}
+.btn-qq{background:rgba(96,165,250,.12);color:var(--blue);border:1px solid rgba(96,165,250,.35)}
+.btn-qq:hover{transform:translateY(-3px);background:rgba(96,165,250,.2)}
+.btn-kook{background:rgba(52,211,153,.12);color:var(--green);border:1px solid rgba(52,211,153,.35)}
+.btn-kook:hover{transform:translateY(-3px);background:rgba(52,211,153,.2)}
+.btn-tg{background:rgba(167,139,250,.12);color:var(--purple);border:1px solid rgba(167,139,250,.35)}
+.btn-tg:hover{transform:translateY(-3px);background:rgba(167,139,250,.2)}
+
+/* ============================================================
+   顶部导航
+   ============================================================ */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:900;
+  transition:background .35s,border-color .35s,box-shadow .35s;
+  border-bottom:1px solid transparent;
+}
+.nav.scrolled{
+  background:rgba(7,9,13,.78);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-bottom-color:rgba(255,255,255,.07);
+  box-shadow:0 8px 30px rgba(0,0,0,.35);
+}
+.nav-inner{height:var(--nav-h);display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:11px}
+.brand-logo{width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 0 12px rgba(52,211,153,.5))}
+.brand-text{display:flex;flex-direction:column;line-height:1.2}
+.brand-text strong{font-size:17px;letter-spacing:.06em}
+.brand-text small{font-size:10px;letter-spacing:.35em;color:var(--txt-3);text-transform:uppercase}
+.nav-links{display:flex;align-items:center;gap:6px}
+.nav-links a{
+  padding:8px 16px;border-radius:10px;font-size:14.5px;color:var(--txt-2);
+  transition:color .2s,background .2s;position:relative;
+}
+.nav-links a:hover{color:var(--txt);background:rgba(255,255,255,.06)}
+.nav-links a.nav-cta{
+  margin-left:8px;color:#04110c;font-weight:700;
+  background:var(--grad);box-shadow:0 4px 18px rgba(52,211,153,.35);
+}
+.nav-links a.nav-cta:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(52,211,153,.5);color:#04110c}
+.nav-burger{display:none;flex-direction:column;gap:5px;padding:10px;z-index:960}
+.nav-burger span{width:22px;height:2px;background:var(--txt);border-radius:2px;transition:.3s}
+.nav-burger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav-burger.open span:nth-child(2){opacity:0}
+.nav-burger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* ============================================================
+   首屏 HERO
+   ============================================================ */
+.hero{
+  position:relative;min-height:100svh;
+  display:flex;align-items:center;
+  padding:calc(var(--nav-h) + 40px) 0 90px;
+  overflow:hidden;
+}
+#heroCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+.hero-bg{
+  position:absolute;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 75% 20%,rgba(52,211,153,.14),transparent 65%),
+    radial-gradient(ellipse 50% 45% at 15% 80%,rgba(167,139,250,.13),transparent 65%),
+    radial-gradient(ellipse 45% 40% at 55% 60%,rgba(34,211,238,.09),transparent 65%),
+    var(--bg);
+}
+.hero-grid{
+  position:absolute;inset:0;z-index:0;opacity:.5;
+  background-image:
+    linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse 80% 70% at 50% 40%,#000 30%,transparent 75%);
+  -webkit-mask-image:radial-gradient(ellipse 80% 70% at 50% 40%,#000 30%,transparent 75%);
+}
+.hero-inner{
+  position:relative;z-index:2;
+  display:grid;grid-template-columns:1.05fr .95fr;gap:60px;align-items:center;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:9px;
+  padding:7px 16px;border-radius:99px;font-size:13px;letter-spacing:.04em;
+  background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);
+  color:var(--green);margin-bottom:26px;
+}
+.hero-badge .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.75)}}
+.hero-title{font-size:clamp(46px,6.2vw,84px);line-height:1.08;font-weight:800;letter-spacing:.01em}
+.hero-title-line{display:block}
+.hero-title-sub{
+  display:block;font-size:.46em;font-weight:700;margin-top:14px;letter-spacing:.14em;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.hero-title-sub em{font-style:normal;opacity:.5;margin:0 .2em;-webkit-text-fill-color:var(--txt-3)}
+.hero-slogan{margin-top:26px;font-size:clamp(18px,2vw,23px);color:var(--txt-2);letter-spacing:.04em}
+.hero-slogan strong{
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800;
+}
+.hero-desc{margin-top:16px;max-width:520px;color:var(--txt-2);font-size:15.5px}
+.hero-actions{display:flex;flex-wrap:wrap;gap:14px;margin-top:34px}
+.hero-stats{display:flex;gap:0;margin-top:48px;border-top:1px solid rgba(255,255,255,.08);padding-top:28px;flex-wrap:wrap}
+.stat{padding:0 34px;border-left:1px solid rgba(255,255,255,.08)}
+.stat:first-child{padding-left:0;border-left:none}
+.stat b{display:block;font-size:30px;font-weight:800;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1.2}
+.stat span{font-size:12.5px;color:var(--txt-3);letter-spacing:.08em}
+
+/* ---------- 首屏右侧 UI 演示 ---------- */
+.hero-ui{position:relative}
+.ui-mock{
+  position:relative;border-radius:24px;overflow:hidden;
+  background:linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,.03));
+  border:1px solid rgba(255,255,255,.14);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  box-shadow:0 40px 90px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04) inset;
+  display:flex;min-height:430px;
+  animation:floaty 7s ease-in-out infinite;
+}
+@keyframes floaty{0%,100%{transform:translateY(0) rotate(-.4deg)}50%{transform:translateY(-16px) rotate(.4deg)}}
+.ui-mock::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.09) 45%,transparent 60%);
+  animation:sheen 5.5s ease-in-out infinite;
+}
+@keyframes sheen{0%,100%{transform:translateX(-60%)}50%{transform:translateX(60%)}}
+.ui-rail{
+  width:64px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:18px 0;border-right:1px solid rgba(255,255,255,.07);background:rgba(0,0,0,.22);
+}
+.ui-rail-item{
+  width:42px;height:42px;border-radius:12px;display:grid;place-items:center;color:var(--txt-3);
+  transition:.25s;
+}
+.ui-rail-item.active{color:#04110c;background:var(--grad);box-shadow:0 4px 16px rgba(52,211,153,.4)}
+.ui-rail-item:not(.active):hover{color:var(--txt);background:rgba(255,255,255,.07)}
+.ui-body{flex:1;padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.ui-search{
+  display:flex;align-items:center;gap:9px;padding:11px 15px;border-radius:12px;
+  background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.08);
+  color:var(--txt-3);font-size:13px;
+}
+.ui-rows{display:flex;flex-direction:column;gap:8px}
+.ui-row{
+  display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:12px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);
+  font-size:13.5px;font-weight:600;
+}
+.ui-row-ic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex-shrink:0}
+.c-green{background:rgba(52,211,153,.15);color:var(--green)}
+.c-blue{background:rgba(96,165,250,.15);color:var(--blue)}
+.c-orange{background:rgba(251,146,60,.15);color:var(--orange)}
+.c-purple{background:rgba(167,139,250,.15);color:var(--purple)}
+.c-cyan{background:rgba(34,211,238,.15);color:var(--cyan)}
+.c-pink{background:rgba(244,114,182,.15);color:var(--pink)}
+.c-rainbow{background:linear-gradient(120deg,rgba(52,211,153,.25),rgba(34,211,238,.25),rgba(167,139,250,.25));color:#fff}
+.ui-switch{
+  margin-left:auto;width:38px;height:21px;border-radius:99px;flex-shrink:0;
+  background:rgba(255,255,255,.12);position:relative;transition:.3s;cursor:pointer;
+}
+.ui-switch::after{
+  content:"";position:absolute;top:2.5px;left:3px;width:16px;height:16px;border-radius:50%;
+  background:#8b98a9;transition:.3s cubic-bezier(.34,1.56,.64,1);
+}
+.ui-switch.on{background:var(--green-2);box-shadow:0 0 14px rgba(16,185,129,.5)}
+.ui-switch.on::after{left:19px;background:#fff}
+.ui-card{
+  margin-top:auto;display:flex;gap:14px;align-items:center;padding:13px;border-radius:14px;
+  background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.08);
+}
+.ui-card-info b{font-size:13.5px;display:block}
+.ui-card-info small{font-size:11.5px;color:var(--txt-3)}
+.hero-ui-shadow{
+  position:absolute;left:8%;right:8%;bottom:-34px;height:50px;z-index:-1;
+  background:radial-gradient(ellipse at center,rgba(52,211,153,.25),transparent 70%);
+  filter:blur(18px);
+}
+.hero-scroll{
+  position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:3;
+  width:26px;height:42px;border:2px solid rgba(255,255,255,.25);border-radius:99px;display:flex;justify-content:center;padding-top:8px;
+}
+.hero-scroll span{width:4px;height:9px;border-radius:99px;background:var(--green);animation:scrollHint 1.8s infinite}
+@keyframes scrollHint{0%{transform:translateY(0);opacity:1}70%{transform:translateY(14px);opacity:0}100%{opacity:0}}
+
+/* ---------- 跑马灯 ---------- */
+.marquee{
+  border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07);
+  background:rgba(255,255,255,.02);overflow:hidden;padding:16px 0;position:relative;z-index:2;
+}
+.marquee-track{display:flex;width:max-content;animation:marquee 30s linear infinite}
+.marquee:hover .marquee-track{animation-play-state:paused}
+.marquee-track span{
+  white-space:nowrap;font-size:14px;letter-spacing:.28em;color:var(--txt-3);padding-right:20px;
+}
+.marquee-track i{font-style:normal;color:var(--green);margin:0 22px;font-size:10px;vertical-align:2px}
+@keyframes marquee{to{transform:translateX(-50%)}}
+
+/* ============================================================
+   通用 Section
+   ============================================================ */
+.section{padding:110px 0;position:relative}
+.section-alt{background:linear-gradient(180deg,transparent,rgba(255,255,255,.018) 20%,rgba(255,255,255,.018) 80%,transparent)}
+.section-head{text-align:center;max-width:680px;margin:0 auto 64px}
+.section-tag{
+  display:inline-block;font-size:12px;font-weight:700;letter-spacing:.4em;color:var(--green);
+  padding:6px 16px 6px 20px;border-radius:99px;margin-bottom:18px;
+  background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.22);
+}
+.section-tag.light{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25);color:#fff}
+.section-head h2{font-size:clamp(30px,4vw,44px);font-weight:800;letter-spacing:.02em}
+.section-head h2 .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.section-head p{margin-top:14px;color:var(--txt-2);font-size:15.5px}
+
+/* ---------- 特性卡片 ---------- */
+.feature-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.feature-card{
+  padding:32px 26px;position:relative;overflow:hidden;
+  transition:transform .35s cubic-bezier(.22,1,.36,1),border-color .35s,box-shadow .35s;
+}
+.feature-card::before{
+  content:"";position:absolute;inset:0;opacity:0;transition:.4s;
+  background:radial-gradient(320px 200px at var(--mx,50%) var(--my,0%),rgba(52,211,153,.12),transparent 70%);
+}
+.feature-card:hover{transform:translateY(-8px);border-color:rgba(52,211,153,.35);box-shadow:0 24px 50px rgba(0,0,0,.4)}
+.feature-card:hover::before{opacity:1}
+.feature-ic{
+  width:56px;height:56px;border-radius:16px;display:grid;place-items:center;margin-bottom:22px;
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+}
+.feature-card:hover .feature-ic{transform:scale(1.12) rotate(-6deg)}
+.ic-green{background:rgba(52,211,153,.14);color:var(--green);box-shadow:0 0 24px rgba(52,211,153,.2)}
+.ic-blue{background:rgba(96,165,250,.14);color:var(--blue);box-shadow:0 0 24px rgba(96,165,250,.2)}
+.ic-orange{background:rgba(251,146,60,.14);color:var(--orange);box-shadow:0 0 24px rgba(251,146,60,.2)}
+.ic-purple{background:rgba(167,139,250,.14);color:var(--purple);box-shadow:0 0 24px rgba(167,139,250,.2)}
+.feature-card h3{font-size:19px;margin-bottom:10px}
+.feature-card p{font-size:13.5px;color:var(--txt-2);line-height:1.8}
+
+.quote-band{
+  margin-top:56px;padding:44px 40px;text-align:center;position:relative;overflow:hidden;
+}
+.quote-band::before{
+  content:"";position:absolute;inset:-40%;
+  background:conic-gradient(from 0deg,transparent 60%,rgba(52,211,153,.14) 75%,transparent 90%);
+  animation:spin 9s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.quote-main{position:relative;font-size:clamp(19px,2.4vw,26px);font-weight:700;letter-spacing:.06em}
+.quote-sub{position:relative;margin-top:10px;color:var(--txt-3);font-size:13.5px;letter-spacing:.2em}
+
+/* ---------- 五大系统 ---------- */
+.systems-wrap{display:grid;grid-template-columns:250px 1fr;overflow:hidden;min-height:480px}
+.systems-side{
+  display:flex;flex-direction:column;gap:6px;padding:20px;
+  border-right:1px solid rgba(255,255,255,.07);background:rgba(0,0,0,.18);
+}
+.sys-tab{
+  display:flex;align-items:center;gap:13px;text-align:left;
+  padding:14px 16px;border-radius:14px;transition:.28s;position:relative;
+}
+.sys-tab .sys-ic{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;flex-shrink:0;transition:.28s}
+.sys-tab b{font-size:15px;display:block;line-height:1.3}
+.sys-tab small{font-size:11px;color:var(--txt-3);letter-spacing:.12em;text-transform:uppercase}
+.sys-tab:hover{background:rgba(255,255,255,.05)}
+.sys-tab.active{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25)}
+.sys-tab.active .sys-ic{transform:scale(1.08)}
+.sys-panels{position:relative;padding:34px 36px}
+.sys-panel{display:none;animation:panelIn .45s cubic-bezier(.22,1,.36,1)}
+.sys-panel.active{display:block}
+@keyframes panelIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.sys-panel-head{margin-bottom:24px}
+.sys-panel-head h3{font-size:24px;font-weight:800}
+.sys-panel-head p{color:var(--txt-2);font-size:14px;margin-top:4px}
+.sys-items{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sys-item{
+  display:flex;align-items:center;gap:13px;padding:15px 17px;border-radius:14px;
+  background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);
+  transition:.25s;
+}
+.sys-item:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.14);transform:translateX(4px)}
+.sys-item-ic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;font-size:17px;flex-shrink:0}
+.sys-item b{font-size:14.5px;display:block}
+.sys-item small{font-size:12px;color:var(--txt-3)}
+
+/* ---------- 皮肤专区 ---------- */
+.skins-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.skins-card{overflow:hidden;display:flex;flex-direction:column;transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s,border-color .35s}
+.skins-card:hover{transform:translateY(-8px);border-color:rgba(167,139,250,.4);box-shadow:0 30px 60px rgba(0,0,0,.5)}
+.skins-media{position:relative;aspect-ratio:16/9;overflow:hidden;background:var(--bg-3)}
+.skins-media img{width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.22,1,.36,1)}
+.skins-card:hover .skins-media img{transform:scale(1.06)}
+.skins-media.img-fallback{display:grid;place-items:center}
+.skins-media.img-fallback::before{
+  content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(circle at 30% 30%,rgba(52,211,153,.35),transparent 55%),
+    radial-gradient(circle at 70% 65%,rgba(167,139,250,.35),transparent 55%),
+    radial-gradient(circle at 50% 90%,rgba(34,211,238,.25),transparent 55%),
+    var(--bg-3);
+}
+.skins-media.img-fallback::after{
+  content:attr(data-ph);position:relative;z-index:1;
+  font-size:52px;font-weight:800;letter-spacing:.1em;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.skins-media-tag{
+  position:absolute;top:14px;left:14px;z-index:2;
+  font-size:12px;font-weight:700;letter-spacing:.1em;padding:5px 13px;border-radius:99px;
+  background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.2);color:#fff;
+  backdrop-filter:blur(6px);
+}
+.skins-info{padding:26px 28px 30px}
+.skins-info h3{font-size:21px;margin-bottom:10px}
+.skins-info>p{font-size:14px;color:var(--txt-2);margin-bottom:18px}
+.skins-list{list-style:none;display:flex;flex-direction:column;gap:9px}
+.skins-list li{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--txt-2)}
+.skins-list li::before{
+  content:"";width:16px;height:16px;flex-shrink:0;border-radius:50%;
+  background:var(--grad) center/9px no-repeat;
+  clip-path:none;
+  -webkit-mask:none;
+}
+.skins-list li::before{content:"✓";color:#04110c;font-size:10px;font-weight:900;display:grid;place-items:center;line-height:16px}
+
+/* ---------- 宣传横幅 ---------- */
+.promo{
+  position:relative;padding:130px 0;overflow:hidden;text-align:center;
+  background:
+    radial-gradient(ellipse 70% 90% at 50% 110%,rgba(52,211,153,.2),transparent 60%),
+    radial-gradient(ellipse 50% 70% at 20% 0%,rgba(167,139,250,.14),transparent 60%),
+    var(--bg-2);
+  border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);
+}
+.promo-inner{position:relative;z-index:2}
+.promo h2{
+  font-size:clamp(52px,8vw,110px);font-weight:900;letter-spacing:.02em;line-height:1.1;margin:16px 0 20px;
+  background:linear-gradient(180deg,#fff 20%,rgba(255,255,255,.35));-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.promo-line{font-size:clamp(16px,2vw,21px);color:var(--txt-2);margin-top:10px;letter-spacing:.08em}
+.promo-line b{color:var(--green)}
+.promo-strong{color:var(--txt);font-weight:700}
+.promo .btn{margin-top:38px}
+
+/* ---------- 购买 ---------- */
+.buy-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+.buy-card{padding:36px;position:relative;overflow:hidden}
+.buy-card::before{
+  content:"";position:absolute;top:-70px;right:-70px;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,153,.22),transparent 70%);
+}
+.buy-ver{
+  display:inline-block;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--green);
+  background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.28);padding:5px 13px;border-radius:99px;margin-bottom:14px;
+}
+.buy-card h3{font-size:30px;font-weight:800;margin-bottom:22px}
+.buy-list{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:28px}
+.buy-list li{display:flex;align-items:center;gap:11px;font-size:14.5px;color:var(--txt-2)}
+.buy-list i{
+  font-style:normal;width:21px;height:21px;flex-shrink:0;border-radius:50%;
+  background:var(--grad);color:#04110c;font-size:11px;font-weight:900;display:grid;place-items:center;
+}
+.buy-actions{display:flex;flex-direction:column;gap:12px}
+.buy-copy-tip{text-align:center;font-size:12px;color:var(--txt-3);margin-top:2px}
+.buy-tip{margin-top:20px;font-size:12.5px;color:var(--txt-3);text-align:center;border-top:1px dashed rgba(255,255,255,.1);padding-top:18px}
+.buy-faq{padding:32px}
+.buy-faq h3{font-size:21px;margin-bottom:18px}
+.faq-item{border-bottom:1px solid rgba(255,255,255,.07)}
+.faq-item:last-child{border-bottom:none}
+.faq-q{
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:16px 2px;font-size:15px;font-weight:600;text-align:left;transition:color .2s;
+}
+.faq-q:hover{color:var(--green)}
+.faq-q .chev{flex-shrink:0;width:22px;height:22px;border-radius:7px;display:grid;place-items:center;background:rgba(255,255,255,.06);color:var(--txt-3);transition:.3s;font-size:12px}
+.faq-item.open .faq-q .chev{transform:rotate(180deg);background:rgba(52,211,153,.15);color:var(--green)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.22,1,.36,1)}
+.faq-a p{padding:0 2px 16px;font-size:13.5px;color:var(--txt-2)}
+
+/* ---------- 页脚 ---------- */
+.footer{border-top:1px solid rgba(255,255,255,.07);background:var(--bg-2);padding:64px 0 34px}
+.footer-inner{text-align:center;display:flex;flex-direction:column;align-items:center;gap:18px}
+.footer .brand{justify-content:center}
+.footer-slogan{color:var(--txt-3);font-size:14px;letter-spacing:.06em}
+.footer-links{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 22px;margin-top:6px}
+.footer-links a{font-size:13.5px;color:var(--txt-2);transition:.2s}
+.footer-links a:hover{color:var(--green)}
+.footer-disclaimer{
+  max-width:760px;margin-top:14px;padding:20px 24px;border-radius:14px;text-align:left;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);
+}
+.footer-disclaimer b{display:block;font-size:13px;color:var(--txt-2);margin-bottom:8px}
+.footer-disclaimer p{font-size:12px;color:var(--txt-3);line-height:1.9}
+.footer-copy{font-size:12.5px;color:var(--txt-3);margin-top:10px;letter-spacing:.06em}
+
+/* ---------- 弹窗 ---------- */
+.disclaimer-mask{
+  position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:20px;
+  background:rgba(4,6,10,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.disclaimer-mask.show{opacity:1;pointer-events:auto}
+.disclaimer-modal{
+  width:min(560px,100%);max-height:86vh;overflow:auto;padding:34px;
+  background:rgba(16,22,35,.92);
+  transform:translateY(24px) scale(.97);transition:transform .35s cubic-bezier(.22,1,.36,1);
+}
+.disclaimer-mask.show .disclaimer-modal{transform:none}
+.disclaimer-head{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.disclaimer-ic{
+  width:44px;height:44px;border-radius:13px;display:grid;place-items:center;flex-shrink:0;
+  background:rgba(251,146,60,.14);color:var(--orange);font-size:22px;font-weight:900;
+  border:1px solid rgba(251,146,60,.3);
+}
+.disclaimer-ic.dl-ic{background:rgba(34,211,238,.14);color:var(--cyan);border-color:rgba(34,211,238,.3)}
+.disclaimer-head h3{font-size:21px}
+.disclaimer-body p{font-size:14px;color:var(--txt-2);margin-bottom:12px}
+.disclaimer-body ol,.disclaimer-body ul{padding-left:20px;display:flex;flex-direction:column;gap:9px}
+.disclaimer-body li{font-size:13.5px;color:var(--txt-2)}
+.disclaimer-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:26px}
+
+/* ---------- 出现动画 ---------- */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .8s cubic-bezier(.22,1,.36,1),transform .8s cubic-bezier(.22,1,.36,1)}
+.reveal.visible{opacity:1;transform:none}
+.reveal[data-delay="1"]{transition-delay:.1s}
+.reveal[data-delay="2"]{transition-delay:.2s}
+.reveal[data-delay="3"]{transition-delay:.3s}
+.reveal[data-delay="4"]{transition-delay:.4s}
+.reveal[data-delay="5"]{transition-delay:.5s}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  .reveal{opacity:1;transform:none}
+}
+
+
+/* ============================================================
+   开场闪屏（第一界面）
+   ============================================================ */
+#splash{
+  position:fixed;inset:0;z-index:2000;
+  background:
+    radial-gradient(ellipse 60% 45% at 50% 35%,rgba(52,211,153,.08),transparent 65%),
+    radial-gradient(ellipse 50% 40% at 50% 75%,rgba(34,211,238,.07),transparent 65%),
+    var(--bg);
+  display:grid;place-items:center;
+  transition:opacity .7s ease,visibility .7s;
+}
+#splash.done{opacity:0;visibility:hidden}
+.splash-inner{text-align:center;padding:0 20px}
+.splash-title{
+  font-size:clamp(54px,11vw,142px);font-weight:900;letter-spacing:.03em;line-height:1.1;
+  background:linear-gradient(120deg,#60a5fa 0%,#22d3ee 55%,#34d399 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 34px rgba(34,211,238,.28));
+  opacity:0;transform:scale(.9) translateY(10px);
+  animation:splashTitle .8s cubic-bezier(.22,1,.36,1) .15s forwards;
+}
+@keyframes splashTitle{to{opacity:1;transform:none}}
+.splash-bar{
+  width:min(560px,72vw);height:3px;margin:30px auto 0;border-radius:99px;
+  background:linear-gradient(90deg,#3b82f6,#22d3ee);
+  box-shadow:0 0 18px rgba(34,211,238,.65),0 0 42px rgba(59,130,246,.35);
+  transform:scaleX(0);transform-origin:center;
+  animation:splashBar 1.5s cubic-bezier(.65,0,.35,1) .7s forwards;
+}
+@keyframes splashBar{to{transform:scaleX(1)}}
+
+/* ============================================================
+   响应式
+   ============================================================ */
+
+@media (max-width:1020px){
+  .hero-inner{grid-template-columns:1fr;gap:50px}
+  .hero-ui{max-width:560px;margin:0 auto;width:100%}
+  .feature-grid{grid-template-columns:1fr 1fr}
+  .systems-wrap{grid-template-columns:1fr}
+  .systems-side{flex-direction:row;overflow-x:auto;border-right:none;border-bottom:1px solid rgba(255,255,255,.07);padding:14px}
+  .sys-tab{flex-shrink:0}
+  .sys-tab small{display:none}
+  .sys-tab b{font-size:14px}
+  .buy-grid{grid-template-columns:1fr}
+}
+@media (max-width:760px){
+  .section{padding:76px 0}
+  .nav-links{
+    position:fixed;inset:var(--nav-h) 0 auto 0;flex-direction:column;align-items:stretch;gap:4px;
+    background:rgba(7,9,13,.97);backdrop-filter:blur(20px);padding:16px 5%;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    transform:translateY(-130%);transition:transform .4s cubic-bezier(.22,1,.36,1);
+  }
+  .nav-links.open{transform:none}
+  .nav-links a{padding:13px 16px;font-size:15px}
+  .nav-links a.nav-cta{margin:8px 0 0;text-align:center}
+  .nav-burger{display:flex}
+  .feature-grid,.skins-layout,.gallery-grid,.sys-items{grid-template-columns:1fr}
+  .hero{padding-top:calc(var(--nav-h) + 24px)}
+  .hero-actions .btn{flex:1;min-width:140px}
+  .stat{padding:0 20px}
+  .stat b{font-size:24px}
+  .sys-panels{padding:24px 18px}
+  .ui-mock{min-height:380px}
+  .disclaimer-actions{flex-direction:column-reverse}
+  .disclaimer-actions .btn{width:100%}
+}
+</style>
 </head>
 <body>
-    
-    <div id="screen1" class="screen active">
-        <div class="title" id="title1">WorldTools</div>
-        <div class="bar-container" id="bar1">
-            <div class="star left" id="star1-left">
-                <svg viewBox="0 0 24 24">
-                    <path d="M12 2 L22 19 L2 19 Z" fill="#00d4ff"/>
-                    <path d="M12 22 L22 5 L2 5 Z" fill="#7b2ff7"/>
-                </svg>
-            </div>
-            <div class="gradient-bar"></div>
-            <div class="star right" id="star1-right">
-                <svg viewBox="0 0 24 24">
-                    <path d="M12 2 L22 19 L2 19 Z" fill="#00d4ff"/>
-                    <path d="M12 22 L22 5 L2 5 Z" fill="#7b2ff7"/>
-                </svg>
-            </div>
-        </div>
+
+<!-- ======= 开场闪屏（第一界面） ======= -->
+<div id="splash" aria-hidden="true">
+  <div class="splash-inner">
+    <div class="splash-title">WorldTools</div>
+    <div class="splash-bar"></div>
+  </div>
+</div>
+
+
+<!-- ======= 顶部导航 ======= -->
+<header class="nav" id="nav">
+  <div class="container nav-inner">
+    <a class="brand" href="#hero">
+      <img class="brand-logo" src="assets/logo-white.png" alt="世界盒子" onerror="this.style.display='none'" />
+      <span class="brand-text"><strong>世界盒子</strong><small>WorldBox</small></span>
+    </a>
+    <nav class="nav-links" id="navLinks">
+      <a href="#features">特性</a>
+      <a href="#systems">系统</a>
+      <a href="#skins">皮肤</a>
+      
+      <a href="#buy" class="nav-cta">立即获取</a>
+    </nav>
+    <button class="nav-burger" id="navBurger" aria-label="菜单"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<!-- ======= 首屏 ======= -->
+<section class="hero" id="hero">
+  <div class="hero-bg"></div>
+  <canvas id="heroCanvas"></canvas>
+  <div class="hero-grid"></div>
+
+  <div class="container hero-inner">
+    <div class="hero-copy">
+      <div class="hero-badge reveal"><span class="dot"></span>WorldBox&nbsp;version&nbsp;1.2.6 · 全新架构来袭</div>
+      <h1 class="hero-title reveal" data-delay="1">
+        <span class="hero-title-line">世界盒子</span>
+        <span class="hero-title-sub">轻量 <em>·</em> 流畅 <em>·</em> 强大</span>
+      </h1>
+      <p class="hero-slogan reveal" data-delay="2">「不止是工具，更是<strong>体验革命</strong>」</p>
+      <p class="hero-desc reveal" data-delay="3">
+        极简设计，做极致体验。世界工具全新版本来袭，全新架构、全新算法、大型团队优化体验，给你带来无尽的游玩体验。
+      </p>
+      <div class="hero-actions reveal" data-delay="4">
+        <a class="btn btn-primary" href="#buy">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          立即获取
+        </a>
+        <a class="btn btn-ghost" href="https://1846534480.share.123pan.cn/123pan/mViyTd-43d4d" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          前往123网盘下载
+        </a>
+        <a class="btn btn-ghost" href="#systems">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          探索功能
+        </a>
+      </div>
+      <div class="hero-stats reveal" data-delay="5">
+        <div class="stat"><b data-count="100" data-suffix="+">0</b><span>内置功能</span></div>
+        <div class="stat"><b data-count="5">0</b><span>核心系统</span></div>
+        <div class="stat"><b>4D/5D</b><span>独家皮肤</span></div>
+        <div class="stat"><b>24H</b><span>售后保障</span></div>
+      </div>
     </div>
-    
-    
-    <div id="screen2" class="screen">
-        <div class="progress-wrapper">
-            <div class="progress-percent" id="percent2">0%</div>
-            <div class="progress-track">
-                <div class="progress-fill" id="progress2"></div>
-            </div>
-            <div class="loading-text" id="loading2">加载中</div>
+
+    <!-- 首屏 UI 动态演示 -->
+    <div class="hero-ui reveal" data-delay="3">
+      <div class="ui-mock" id="uiMock">
+        <div class="ui-rail">
+          <span class="ui-rail-item active" title="主页"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg></span>
+          <span class="ui-rail-item" title="战斗"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="m13 19 6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg></span>
+          <span class="ui-rail-item" title="移动"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="1.6" fill="currentColor" stroke="none"/><path d="M9 21l2.5-6.5L9 12l1-4 3.5-1 2 4 3 1.5"/><path d="M9 12 6.5 13 5 17"/></svg></span>
+          <span class="ui-rail-item" title="生存"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+          <span class="ui-rail-item" title="渲染"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
+          <span class="ui-rail-item" title="工具"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 12-8.5 8.5a2.1 2.1 0 0 1-3-3L12 9"/><path d="M17.6 6.6 20 4l-2.6-2.6L15 4z"/></svg></span>
         </div>
+        <div class="ui-body">
+          <div class="ui-search"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>Search...</div>
+          <div class="ui-rows">
+            <div class="ui-row"><span class="ui-row-ic c-green"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="m13 19 6-6"/><path d="M16 16l4 4"/></svg></span>战斗系统<span class="ui-switch on"></span></div>
+            <div class="ui-row"><span class="ui-row-ic c-blue"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>生存系统<span class="ui-switch"></span></div>
+            <div class="ui-row"><span class="ui-row-ic c-orange"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="1.6" fill="currentColor" stroke="none"/><path d="M9 21l2.5-6.5L9 12l1-4 3.5-1 2 4 3 1.5"/></svg></span>移动系统<span class="ui-switch on"></span></div>
+            <div class="ui-row"><span class="ui-row-ic c-purple"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>漏洞系统<span class="ui-switch"></span></div>
+            <div class="ui-row"><span class="ui-row-ic c-cyan"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span>渲染系统<span class="ui-switch on"></span></div>
+          </div>
+          <div class="ui-card">
+            <div class="ui-card-info"><b>全网独家 4D/5D 皮肤加载</b><small>加载特效皮肤，视觉盛宴</small></div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-ui-shadow"></div>
     </div>
-    
-    <!-- 界面3：主界面 -->
-    <div id="screen3" class="screen">
-        <div class="subtitle" id="subtitle3">
-            world box重新定义我的世界工具箱<br>
-            我的世界我做主
-        </div>
-        <div class="bar-container" id="bar3">
-            <div class="star left" id="star3-left">
-                <svg viewBox="0 0 24 24">
-                    <path d="M12 2 L22 19 L2 19 Z" fill="#00d4ff"/>
-                    <path d="M12 22 L22 5 L2 5 Z" fill="#7b2ff7"/>
-                </svg>
-            </div>
-            <div class="gradient-bar"></div>
-            <div class="star right" id="star3-right">
-                <svg viewBox="0 0 24 24">
-                    <path d="M12 2 L22 19 L2 19 Z" fill="#00d4ff"/>
-                    <path d="M12 22 L22 5 L2 5 Z" fill="#7b2ff7"/>
-                </svg>
-            </div>
-        </div>
-        <div class="buttons" id="buttons3">
-            <a href="https://o.8x.fit/shop/Redandroid.Worldbox" class="btn btn-blue" target="_blank">购买卡密点我</a>
-            <a href="https://1846534480.share.123pan.cn/123pan/mViyTd-43d4d" class="btn btn-transparent" target="_blank">下载</a>
-        </div>
+  </div>
+
+  <a class="hero-scroll" href="#features" aria-label="向下滚动"><span></span></a>
+</section>
+
+<!-- ======= 跑马灯 ======= -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span>轻量 · 流畅 · 强大<i>◆</i>极简设计 做极致体验<i>◆</i>不止是工具 更是体验革命<i>◆</i>百种功能 稳定流畅<i>◆</i>官方级售后服务<i>◆</i>跨时代产物<i>◆</i></span>
+    <span>轻量 · 流畅 · 强大<i>◆</i>极简设计 做极致体验<i>◆</i>不止是工具 更是体验革命<i>◆</i>百种功能 稳定流畅<i>◆</i>官方级售后服务<i>◆</i>跨时代产物<i>◆</i></span>
+  </div>
+</div>
+
+<main>
+
+<!-- ======= 特性 ======= -->
+<section class="section" id="features">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-tag">FEATURES</span>
+      <h2>为什么选择<span class="grad"> 世界盒子 </span>？</h2>
+      <p>每一处 UI 细节，都经过反复打磨</p>
     </div>
-    
-    <script>
-        
-        setTimeout(() => {
-            document.getElementById('title1').classList.add('show');
-        }, 300);
-        
-        setTimeout(() => {
-            document.getElementById('bar1').classList.add('show');
-        }, 1800);
-        
-        setTimeout(() => {
-            document.getElementById('star1-left').classList.add('show');
-            document.getElementById('star1-right').classList.add('show');
-        }, 2000);
-        
-        
-        setTimeout(() => {
-            document.getElementById('screen1').classList.remove('active');
-            document.getElementById('screen2').classList.add('active');
-            
-            
-            setTimeout(() => {
-                document.getElementById('percent2').classList.add('show');
-                document.getElementById('loading2').classList.add('show');
-                
-                const progressEl = document.getElementById('progress2');
-                const percentEl = document.getElementById('percent2');
-                
-                const duration = 1900;
-                const startTime = performance.now();
-                
-                function updateProgress(currentTime) {
-                    const elapsed = currentTime - startTime;
-                    const progress = Math.min(elapsed / duration, 1);
-                    const value = Math.floor(progress * 100);
-                    
-                    progressEl.style.width = value + '%';
-                    percentEl.textContent = value + '%';
-                    
-                    if (progress < 1) {
-                        requestAnimationFrame(updateProgress);
-                    } else {
-                        progressEl.style.width = '100%';
-                        percentEl.textContent = '100%';
-                    }
-                }
-                requestAnimationFrame(updateProgress);
-            }, 300);
-            
-            
-            setTimeout(() => {
-                document.getElementById('screen2').classList.remove('active');
-                document.getElementById('screen3').classList.add('active');
-                
-                
-                setTimeout(() => {
-                    document.getElementById('subtitle3').classList.add('show');
-                }, 300);
-                
-                setTimeout(() => {
-                    document.getElementById('bar3').classList.add('show');
-                }, 1800);
-                
-                setTimeout(() => {
-                    document.getElementById('star3-left').classList.add('show');
-                    document.getElementById('star3-right').classList.add('show');
-                    document.getElementById('buttons3').classList.add('show');
-                }, 1950);
-            }, 2500); 
-        }, 4200); 
-    </script>
+
+    <div class="feature-grid">
+      <article class="glass feature-card reveal">
+        <div class="feature-ic ic-green"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg></div>
+        <h3>极致轻量</h3>
+        <p>全新华丽架构，体积小巧不占资源，低配设备也能丝滑运行，真正做到轻装上阵。</p>
+      </article>
+      <article class="glass feature-card reveal" data-delay="1">
+        <div class="feature-ic ic-blue"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20a8 8 0 1 1 8-8"/><path d="m12 12 5-3"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg></div>
+        <h3>流畅稳定</h3>
+        <p>全新算法驱动，百种功能稳定流畅，长时间游玩不卡顿、不掉帧，体验始终在线。</p>
+      </article>
+      <article class="glass feature-card reveal" data-delay="2">
+        <div class="feature-ic ic-orange"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></div>
+        <h3>百种功能</h3>
+        <p>战斗、生存、移动、漏洞、渲染五大系统一应俱全，持续更新，想你所想。</p>
+      </article>
+      <article class="glass feature-card reveal" data-delay="3">
+        <div class="feature-ic ic-purple"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></div>
+        <h3>售后保障</h3>
+        <p>官方级售后服务，保障你的使用体验。账号长效稳定，使用更安心。</p>
+      </article>
+    </div>
+
+    <div class="glass quote-band reveal">
+      <p class="quote-main">「创新级交互体验，UI 细节精心打磨」</p>
+      <p class="quote-sub">跨时代产物 · Worldbox — 每一次点击，都是享受</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======= 系统展示 ======= -->
+<section class="section section-alt" id="systems">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-tag">SYSTEMS</span>
+      <h2>五大<span class="grad"> 核心系统 </span></h2>
+      <p>一站式覆盖你的世界盒子游玩旅程</p>
+    </div>
+
+    <div class="systems-wrap glass reveal">
+      <aside class="systems-side">
+        <button class="sys-tab active" data-sys="0">
+          <span class="sys-ic c-green"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="m13 19 6-6"/><path d="M16 16l4 4"/></svg></span>
+          <b>战斗系统</b><small>Combat</small>
+        </button>
+        <button class="sys-tab" data-sys="1">
+          <span class="sys-ic c-blue"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+          <b>生存系统</b><small>Survival</small>
+        </button>
+        <button class="sys-tab" data-sys="2">
+          <span class="sys-ic c-orange"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="1.6" fill="currentColor" stroke="none"/><path d="M9 21l2.5-6.5L9 12l1-4 3.5-1 2 4 3 1.5"/></svg></span>
+          <b>移动系统</b><small>Movement</small>
+        </button>
+        <button class="sys-tab" data-sys="3">
+          <span class="sys-ic c-purple"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+          <b>漏洞系统</b><small>Exploit</small>
+        </button>
+        <button class="sys-tab" data-sys="4">
+          <span class="sys-ic c-cyan"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
+          <b>渲染系统</b><small>Render</small>
+        </button>
+      </aside>
+
+      <div class="sys-panels" id="sysPanels">
+        <div class="sys-panel active">
+          <div class="sys-panel-head"><h3>战斗系统</h3><p>先发制人，掌控每一场战斗的节奏</p></div>
+          <div class="sys-items">
+            <div class="sys-item"><span class="sys-item-ic c-green">⚔</span><div><b>杀戮光环</b><small>自动锁定周围目标，Switch 一键开关</small></div><span class="ui-switch on"></span></div>
+            <div class="sys-item"><span class="sys-item-ic c-orange">💥</span><div><b>攻击特效</b><small>炫酷打击特效，拳拳到肉</small></div><span class="ui-switch on"></span></div>
+            <div class="sys-item"><span class="sys-item-ic c-blue">🌾</span><div><b>自动农药</b><small>Sprite 全自动收获，解放双手</small></div><span class="ui-switch"></span></div>
+            <div class="sys-item"><span class="sys-item-ic c-purple">🏷</span><div><b>攻击标签</b><small>一键标记目标，战场信息尽在掌握</small></div><span class="ui-switch on"></span></div>
+          </div>
+        </div>
+        <div class="sys-panel">
+          <div class="sys-panel-head"><h3>生存系统</h3><p>你的世界，由你自由主宰</p></div>
+          <div class="sys-items">
+            <div class="sys-item"><span class="sys-item-ic c-cyan">🕐</span><div><b>游戏时间修改</b><small>自由掌控昼夜，时间随你心意</small></div><span class="ui-switch on"></span></div>
+            <div class="sys-item"><span class="sys-item-ic c-pink">🎒</span><div><b>喷气背包</b><small>Jetpack 冲天而起，探索无极限</small></div><span class="ui-switch on"></span></div>
+            <div class="sys-item"><span class="sys-item-ic c-blue">🧭</span><div><b>玩家传送</b><small>快速抵达任何地点，世界咫尺之间</small></div><span class="ui-switch"></span></div>
+            <div class="sys-item"><span class="sys-item-ic c-orange">🛡</span><div><b>防假人</b><small>FAKE 假人防护，安心游玩</small></div><span class="ui-switch on"></span></div>
+          </div>
+        </div>
+        <div class="sys-panel">
+          <div class="sys-panel-head"><h3>移动系统</h3><p>摆脱地心引力，领略云端风景</p></div>
+          <div class="sys-items">
+            <div class="sys-item"><span class="sys-item-ic c-pink">🐇</span><div><b>兔子跳</b><small>RabbitHop 轻盈连跳，动如脱兔</small></div><span class="ui-switch on"></span></div>
+            <div class="sys-item"><span class="sys-item-ic c-cyan">☁</span><div><b>空中跳跃</b><small>AirJump 踏空而行，步步生云</small></div><span class="ui-switch on"></span></div>
+            <div class="sys-item"><span class="sys-item-ic c-green">🕊</span><div><b>飞行</b><small>Fly 自由翱翔，天际任你驰骋</small></div><span class="ui-switch on"></span></div>
+            <div class="sys-item"><span class="sys-item-ic c-orange">💨</span><div><b>速度增强</b><small>Speed 全速冲刺，快人一步</small></div><span class="ui-switch"></span></div>
+            <div class="sys-item"><span class="sys-item-ic c-purple">🚗</span><div><b>载具飞行</b><small>VehicleFly 车船亦可腾空</small></div><span class="ui-switch on"></span></div>
+            <div class="sys-item"><span class="sys-item-ic c-blue">🌀</span><div><b>虚空回弹</b><small>VoidBounce 坠落也能弹回</small></div><span class="ui-switch"></span></div>
+          </div>
+        </div>
+        <div class="sys-panel">
+          <div class="sys-panel-head"><h3>漏洞系统</h3><p>突破常规，发现世界盒子的另一面</p></div>
+          <div class="sys-items">
+            <div class="sys-item"><span class="sys-item-ic c-purple">👻</span><div><b>幽灵模式</b><small>穿模潜行，来无影去无踪</small></div><span class="ui-switch on"></span></div>
+            <div class="sys-item"><span class="sys-item-ic c-green">🧱</span><div><b>边界突破</b><small>探索地图之外的全新领域</small></div><span class="ui-switch"></span></div>
+            <div class="sys-item"><span class="sys-item-ic c-cyan">🔓</span><div><b>权限绕过</b><small>解锁更多原版不可能的操作</small></div><span class="ui-switch on"></span></div>
+            <div class="sys-item"><span class="sys-item-ic c-orange">🧪</span><div><b>实验特性</b><small>持续更新的趣味玩法实验室</small></div><span class="ui-switch"></span></div>
+          </div>
+        </div>
+        <div class="sys-panel">
+          <div class="sys-panel-head"><h3>渲染系统</h3><p>看见不一样的世界，视觉全面进化</p></div>
+          <div class="sys-items">
+            <div class="sys-item"><span class="sys-item-ic c-rainbow">🎨</span><div><b>自定义实体颜色</b><small>万物随你染色，打造专属世界</small></div><span class="ui-switch on"></span></div>
+            <div class="sys-item"><span class="sys-item-ic c-cyan">🌌</span><div><b>自定义天空颜色</b><small>昼夜霞光，一键切换氛围</small></div><span class="ui-switch on"></span></div>
+            <div class="sys-item"><span class="sys-item-ic c-blue">🧍</span><div><b>人物面板渲染</b><small>角色信息可视化，数据一目了然</small></div><span class="ui-switch"></span></div>
+            <div class="sys-item"><span class="sys-item-ic c-green">🎥</span><div><b>运动摄像机</b><small>流畅运镜，记录高光时刻</small></div><span class="ui-switch on"></span></div>
+            <div class="sys-item"><span class="sys-item-ic c-orange">📷</span><div><b>玩家摄像机</b><small>多视角自由切换，观战新体验</small></div><span class="ui-switch on"></span></div>
+            <div class="sys-item"><span class="sys-item-ic c-pink">✨</span><div><b>5D 皮肤</b><small>独家炫彩皮肤，全场焦点所在</small></div><span class="ui-switch on"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= 皮肤专区 ======= -->
+<section class="section" id="skins">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-tag">SKINS</span>
+      <h2>4D / 5D <span class="grad"> 独家皮肤加载</span></h2>
+      <p>全网独家独家新版本 4D 皮肤加载，特效拉满，惊艳全场</p>
+    </div>
+
+    <div class="skins-layout">
+      <div class="glass skins-card reveal">
+        <div class="skins-media" data-ph="4D">
+          <img src="assets/shot-home.jpg" alt="4D 皮肤加载界面" loading="lazy" onerror="this.parentNode.classList.add('img-fallback');this.remove()" />
+          <span class="skins-media-tag">4D 皮肤加载</span>
+        </div>
+        <div class="skins-info">
+          <h3>4D 皮肤加载</h3>
+          <p>全网独家独家新版本 4D 皮肤加载，动态特效皮肤一键穿戴，让你在服务器里成为最耀眼的存在。</p>
+          <ul class="skins-list">
+            <li>动态特效实时渲染</li>
+            <li>全网独家资源持续更新</li>
+            <li>账号长效稳定，到期无忧</li>
+          </ul>
+        </div>
+      </div>
+      <div class="glass skins-card reveal" data-delay="1">
+        <div class="skins-media" data-ph="5D">
+          <img src="assets/shot-systems.jpg" alt="5D 皮肤展示界面" loading="lazy" onerror="this.parentNode.classList.add('img-fallback');this.remove()" />
+          <span class="skins-media-tag">5D 皮肤</span>
+        </div>
+        <div class="skins-info">
+          <h3>5D 皮肤</h3>
+          <p>全新 5D 皮肤系统震撼来袭，更精细的模型、更华丽的特效，带你进入前所未有的视觉维度。</p>
+          <ul class="skins-list">
+            <li>5D 高清模型加载</li>
+            <li>专属特效与光环</li>
+            <li>兼容多版本随心切换</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= 宣传横幅 ======= -->
+<section class="promo">
+  <div class="container promo-inner reveal">
+    <span class="section-tag light">「跨时代产物」</span>
+    <h2>Worldbox</h2>
+    <p class="promo-line"><b>创新级</b>交互体验，UI 细节精心打磨</p>
+    <p class="promo-line">「百种功能，稳定流畅」</p>
+    <p class="promo-line promo-strong">官方级售后服务 · 保障你的使用体验</p>
+    <a class="btn btn-primary btn-lg" href="#buy">立即加入</a>
+  </div>
+</section>
+
+<!-- ======= 购买 / 联系 ======= -->
+<section class="section" id="buy">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-tag">GET STARTED</span>
+      <h2>立即<span class="grad"> 获取世界盒子 </span></h2>
+      <p>开启你的全新游玩体验</p>
+    </div>
+
+    <div class="buy-grid">
+      <div class="glass buy-card reveal">
+        <div class="buy-card-head">
+          <span class="buy-ver">WorldBox version 1.2.6</span>
+          <h3>世界盒子</h3>
+        </div>
+        <ul class="buy-list">
+          <li><i>✓</i>五大核心系统 · 百种功能</li>
+          <li><i>✓</i>4D / 5D 独家皮肤加载</li>
+          <li><i>✓</i>全新架构 · 大型团队优化</li>
+          <li><i>✓</i>官方级售后服务</li>
+          <li><i>✓</i>账号长效稳定保障</li>
+        </ul>
+        <div class="buy-actions">
+          <a class="btn btn-primary btn-full" href="https://o.8x.fit/shop/Redandroid.Worldbox" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            前往官网购买卡密
+          </a>
+          <a class="btn btn-download btn-full" href="https://1846534480.share.123pan.cn/123pan/mViyTd-43d4d" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            前往123网盘下载
+          </a>
+          <a class="btn btn-kook btn-full" href="https://kook.vip/qgBGQn" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="18" height="18"><rect x="2" y="4.5" width="20" height="15" rx="5.5" fill="#ffffff"/><text x="12" y="15.4" text-anchor="middle" font-size="6.6" font-weight="900" letter-spacing=".4" fill="#000000" font-family="'Arial Black',Arial,sans-serif">KOOK</text></svg>
+            加入KOOK频道
+          </a>
+          <a class="btn btn-tg btn-full" href="https://t.me/worldtools3369" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            加入TG频道
+          </a>
+          <a class="btn btn-qq btn-full" href="https://qm.qq.com/q/yJYF1gztx6" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C8.1 2 5 5.1 5 9v1.4c-1 .8-1.7 2-2 3.3-.5 2.2.2 4.2 1.7 5.4.3 3.2 2.9 5.4 6.3 5.4h2c3.4 0 6-2.2 6.3-5.4 1.5-1.2 2.2-3.2 1.7-5.4-.3-1.3-1-2.5-2-3.3V9c0-3.9-3.1-7-7-7zm0 2c2.8 0 5 2.2 5 5v1.7c-.6-.2-1.3-.3-2-.4-.3-.6-.6-1.2-1-1.7.7-1.4.2-3.2-1.1-4.1-.8.3-1.4.8-1.9 1.4-.5-.6-1.1-1.1-1.9-1.4-1.3.9-1.8 2.7-1.1 4.1-.4.5-.7 1.1-1 1.7-.7.1-1.4.2-2 .4V9c0-2.8 2.2-5 5-5z"/></svg>
+            加入QQ交流群 832809952
+          </a>
+          <p class="buy-copy-tip">入群注意「本群禁黄禁广」</p>
+        </div>
+        <p class="buy-tip">适配版本：Minecraft 3.9.15 · version 1.2.6（中国版）</p>
+      </div>
+
+      <div class="glass buy-faq reveal" data-delay="1">
+        <h3>常见问题</h3>
+        <div class="faq-item">
+          <button class="faq-q">支持哪些版本？<span class="chev">▾</span></button>
+          <div class="faq-a"><p>当前适配 Minecraft 3.9.15（version 1.2.6）中国版，后续版本持续跟进更新。</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">账号稳定吗？<span class="chev">▾</span></button>
+          <div class="faq-a"><p>账号长效稳定，官方级售后服务全程保障你的使用体验，到期前及时提醒续期。</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">功能会持续更新吗？<span class="chev">▾</span></button>
+          <div class="faq-a"><p>世界工具持续迭代，全新架构与算法带来更多可能，加入交流群获取第一手更新资讯。</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">如何加入交流群？<span class="chev">▾</span></button>
+          <div class="faq-a"><p>点击上方「企鹅交流群」按钮即可一键加群</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">在哪里下载？<span class="chev">▾</span></button>
+          <div class="faq-a"><p>点击「前往123网盘下载」按钮，跳转 123 云盘分享页即可获取世界工具官方下载，免费不限速、免登录下载。</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">如何购买与使用？<span class="chev">▾</span></button>
+          <div class="faq-a"><p>前往官网 https://o.8x.fit/shop/Redandroid.Worldbox 完成购买，按指引即可开启你的世界盒子之旅。</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ======= 页脚 ======= -->
+<footer class="footer">
+  <div class="container footer-inner">
+    <a class="brand" href="#hero">
+      <img class="brand-logo" src="assets/logo-white.png" alt="世界盒子" onerror="this.style.display='none'" />
+      <span class="brand-text"><strong>世界盒子</strong><small>WorldBox</small></span>
+    </a>
+    <p class="footer-slogan">轻量 · 流畅 · 强大 —— 不止是工具，更是体验革命</p>
+    <div class="footer-links">
+      <a href="#features">特性</a><a href="#systems">系统</a><a href="#skins">皮肤</a>
+      <a href="#buy">购买</a>
+      <a href="https://o.8x.fit/shop/Redandroid.Worldbox" target="_blank" rel="noopener">官网</a>
+      <a href="https://1846534480.share.123pan.cn/123pan/mViyTd-43d4d" target="_blank" rel="noopener">下载</a>
+      <a href="#" data-disclaimer>声明</a>
+    </div>
+    <div class="footer-disclaimer">
+      <b>免责声明</b>
+      <p>本网站为「世界盒子 WorldBox」的第三方宣传展示页面，站内所有图文内容仅供参考，不构成任何购买或使用邀约。本工具仅供学习交流与个人研究使用，禁止用于任何商业用途及法律法规禁止之用途；因下载、使用本工具产生的一切后果由使用者自行承担，与本网站及开发者无关。本站内所有活动、规则及信息的最终<b>解释权归本站所有</b>。</p>
+    </div>
+    <p class="footer-copy">© 2026 WorldBox 世界盒子 · 企鹅交流群 832809952</p>
+  </div>
+</footer>
+
+<!-- 免责声明弹窗 -->
+<div class="disclaimer-mask" id="disclaimerMask" aria-hidden="true">
+  <div class="disclaimer-modal glass" role="dialog" aria-modal="true" aria-labelledby="disclaimerTitle">
+    <div class="disclaimer-head">
+      <span class="disclaimer-ic">⛏</span>
+      <h3 id="disclaimerTitle">世界盒子更新日志</h3>
+    </div>
+    <div class="disclaimer-body">
+      <p>欢迎访问『世界盒子 WorldBox』：</p>
+      <ul>
+              <li>
+#功能更新</li>
+<li>[+]联机商店破解</li>
+<li>[+]玩家坐标查询</li>
+<li>[+]联机布吉岛秒杀</li>
+<li>[+]围住自己</li>
+<li>[+]自动围床</li>
+<li>[+]投影建筑</li>
+<li>[+]杀戮掩体判断</li>
+<li>[+]公益模式</li>
+<li>[+]保存导入配置</li>
+<li>[+]杀戮移动修复</li>
+<li>[+]玩家坐标查询</li>
+<li>#优化更新</li>
+<li>[+]闪退问题优化</li>
+<li>[+]渲染优化</li>
+<li>[+]流畅度优化</li>
+<li>[+]自动工具优化</li>
+<li>[+]移动修复优化
+</li>
+      </ul>
+    </div>
+    <div class="disclaimer-actions">
+      <button class="btn btn-ghost" id="disclaimerExit" type="button">退出网站</button>
+      <button class="btn btn-primary" id="disclaimerAgree" type="button">已读并继续</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ---------- 导航滚动感 + 移动端菜单 ---------- */
+  var nav = document.getElementById('nav');
+  var navLinks = document.getElementById('navLinks');
+  var burger = document.getElementById('navBurger');
+  function onScroll(){ nav.classList.toggle('scrolled', window.scrollY > 24); }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+  burger.addEventListener('click', function(){
+    burger.classList.toggle('open');
+    navLinks.classList.toggle('open');
+  });
+  navLinks.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){
+      burger.classList.remove('open');
+      navLinks.classList.remove('open');
+    });
+  });
+
+  /* ---------- 滚动出现动画 ---------- */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  }, {threshold:.12, rootMargin:'0px 0px -40px 0px'});
+  function startReveals(){ document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); }); }
+
+  /* ---------- 数字滚动 ---------- */
+  var counters = document.querySelectorAll('[data-count]');
+  var cio = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      var el = e.target, target = +el.dataset.count, suffix = el.dataset.suffix || '';
+      var start = null, dur = 1600;
+      function tick(ts){
+        if(!start) start = ts;
+        var p = Math.min((ts - start) / dur, 1);
+        var eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(target * eased) + suffix;
+        if(p < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+      cio.unobserve(el);
+    });
+  }, {threshold:.5});
+  function startCounters(){ counters.forEach(function(el){ cio.observe(el); }); }
+
+  /* ---------- 系统选项卡 ---------- */
+  var tabs = document.querySelectorAll('.sys-tab');
+  var panels = document.querySelectorAll('.sys-panel');
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      tabs.forEach(function(t){ t.classList.remove('active'); });
+      panels.forEach(function(p){ p.classList.remove('active'); });
+      tab.classList.add('active');
+      panels[+tab.dataset.sys].classList.add('active');
+    });
+  });
+
+  /* ---------- 开关切换（演示交互） ---------- */
+  document.querySelectorAll('.ui-switch').forEach(function(sw){
+    sw.addEventListener('click', function(e){
+      e.stopPropagation();
+      sw.classList.toggle('on');
+    });
+  });
+
+  /* ---------- 特性卡片鼠标光斑 ---------- */
+  document.querySelectorAll('.feature-card').forEach(function(card){
+    card.addEventListener('mousemove', function(e){
+      var r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+  });
+
+  /* ---------- FAQ 手风琴 ---------- */
+  document.querySelectorAll('.faq-item').forEach(function(item){
+    var q = item.querySelector('.faq-q'), a = item.querySelector('.faq-a');
+    q.addEventListener('click', function(){
+      var open = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(function(o){
+        o.classList.remove('open');
+        o.querySelector('.faq-a').style.maxHeight = null;
+      });
+      if(!open){
+        item.classList.add('open');
+        a.style.maxHeight = a.scrollHeight + 'px';
+      }
+    });
+  });
+
+  /* ---------- 弹窗工具 ---------- */
+  function openMask(m){ m.classList.add('show'); m.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; }
+  function closeMask(m){ m.classList.remove('show'); m.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
+  document.querySelectorAll('.disclaimer-mask').forEach(function(m){
+    m.addEventListener('click', function(e){ if(e.target === m) closeMask(m); });
+  });
+
+  /* 进入页免责声明（仅首次） */
+  var dm = document.getElementById('disclaimerMask');
+  var pendingDisclaimer = false;
+  try{
+    if(!localStorage.getItem('wb_disclaimer_ok')) pendingDisclaimer = true;
+  }catch(err){ pendingDisclaimer = true; }
+  document.getElementById('disclaimerAgree').addEventListener('click', function(){
+    try{ localStorage.setItem('wb_disclaimer_ok','1'); }catch(err){}
+    closeMask(dm);
+  });
+  document.getElementById('disclaimerExit').addEventListener('click', function(){
+    window.location.href = 'about:blank';
+  });
+  document.querySelector('[data-disclaimer]').addEventListener('click', function(e){
+    e.preventDefault(); openMask(dm);
+  });
+
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){ document.querySelectorAll('.disclaimer-mask.show').forEach(closeMask); }
+  });
+
+  /* ---------- 首屏粒子背景 ---------- */
+  var canvas = document.getElementById('heroCanvas');
+  var ctx = canvas.getContext('2d');
+  var particles = [], W, H, raf;
+  var COLORS = ['52,211,153','34,211,238','167,139,250'];
+  function resize(){
+    var hero = document.getElementById('hero');
+    W = canvas.width = hero.offsetWidth;
+    H = canvas.height = hero.offsetHeight;
+  }
+  function init(){
+    resize();
+    particles = [];
+    var n = Math.min(70, Math.floor(W * H / 22000));
+    for(var i = 0; i < n; i++){
+      particles.push({
+        x: Math.random() * W, y: Math.random() * H,
+        vx: (Math.random() - .5) * .35, vy: (Math.random() - .5) * .35,
+        r: Math.random() * 2 + .6,
+        c: COLORS[i % 3],
+        a: Math.random() * .5 + .15
+      });
+    }
+  }
+  function step(){
+    ctx.clearRect(0, 0, W, H);
+    for(var i = 0; i < particles.length; i++){
+      var p = particles[i];
+      p.x += p.vx; p.y += p.vy;
+      if(p.x < 0 || p.x > W) p.vx *= -1;
+      if(p.y < 0 || p.y > H) p.vy *= -1;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(' + p.c + ',' + p.a + ')';
+      ctx.fill();
+      for(var j = i + 1; j < particles.length; j++){
+        var q = particles[j], dx = p.x - q.x, dy = p.y - q.y, d = dx*dx + dy*dy;
+        if(d < 12000){
+          ctx.beginPath();
+          ctx.strokeStyle = 'rgba(' + p.c + ',' + (0.08 * (1 - d / 12000)) + ')';
+          ctx.lineWidth = 1;
+          ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y);
+          ctx.stroke();
+        }
+      }
+    }
+    raf = requestAnimationFrame(step);
+  }
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!reduceMotion){
+    init();
+    step();
+    window.addEventListener('resize', init);
+    document.addEventListener('visibilitychange', function(){
+      if(document.hidden) cancelAnimationFrame(raf);
+      else step();
+    });
+  }
+
+  /* ---------- 开场闪屏 → 自动进入第二界面 ---------- */
+  var splash = document.getElementById('splash');
+  document.body.style.overflow = 'hidden';
+  /* 时间轴：标题 0.15s 入场 → 长条 0.7s 起 1.5s 延伸到全长 → 2.6s 淡出 */
+  var SPLASH_MS = reduceMotion ? 400 : 2600;
+  setTimeout(function(){
+    splash.classList.add('done');
+    document.body.style.overflow = '';
+    setTimeout(function(){ if(splash.parentNode) splash.parentNode.removeChild(splash); }, 750);
+    startReveals();
+    startCounters();
+    if(pendingDisclaimer) setTimeout(function(){ openMask(dm); }, 500);
+  }, SPLASH_MS);
+})();
+</script>
 </body>
 </html>
