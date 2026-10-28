@@ -429,7 +429,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 }
 .carousel-viewport img{
   position:absolute;top:0;left:0;width:100%;height:100%;
-  object-fit:cover;display:block;
+  object-fit:contain;display:block;
 }
 .carousel-btn{
   position:absolute;top:50%;transform:translateY(-50%);z-index:4;
@@ -451,6 +451,87 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   transition:background .25s,transform .25s;
 }
 .carousel-dot.on{background:#34d399;transform:scale(1.3)}
+.skins-media .carousel-btn{width:38px;height:38px}
+
+/* ===== 整体美化增强 ===== */
+::selection{background:rgba(52,211,153,.32);color:#fff}
+::-webkit-scrollbar-thumb:hover{background:#2b3c52}
+a:focus-visible,button:focus-visible{outline:2px solid rgba(52,211,153,.65);outline-offset:2px}
+
+/* 章节编号标签 */
+.section-tag i{font-style:normal;opacity:.55;margin-right:7px;font-weight:600;letter-spacing:.12em}
+
+/* 章节顶部分隔发光线 */
+.section::before{
+  content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:86%;width:min(1180px,86%);height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);
+}
+
+/* 导航链接下划线渐入 */
+.nav-links a:not(.nav-cta){position:relative}
+.nav-links a:not(.nav-cta)::after{
+  content:"";position:absolute;left:16px;right:16px;bottom:3px;height:2px;border-radius:2px;
+  background:var(--grad);transform:scaleX(0);transform-origin:left;
+  transition:transform .32s cubic-bezier(.22,1,.36,1);
+}
+.nav-links a:not(.nav-cta):hover::after{transform:scaleX(1)}
+
+/* 首屏网格缓慢平移 */
+.hero-grid{animation:grid-pan 38s linear infinite}
+@keyframes grid-pan{to{background-position:56px 56px}}
+
+/* 主标题微光扫过 */
+.hero-title-line{
+  display:block;
+  background:linear-gradient(100deg,#f2f7ff 0%,#f2f7ff 32%,#6ee7b7 46%,#22d3ee 55%,#f2f7ff 70%,#f2f7ff 100%);
+  background-size:230% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:title-shine 7s ease-in-out infinite;
+}
+@keyframes title-shine{0%,100%{background-position:115% 0}50%{background-position:-15% 0}}
+
+/* 主按钮呼吸光晕 */
+@keyframes cta-breathe{
+  0%,100%{box-shadow:0 4px 18px rgba(52,211,153,.28)}
+  50%{box-shadow:0 6px 30px rgba(52,211,153,.5),0 0 0 7px rgba(52,211,153,.08)}
+}
+.btn-primary{animation:cta-breathe 3.4s ease-in-out infinite}
+
+/* 数据栏悬停 */
+.stat{transition:transform .3s}
+.stat:hover{transform:translateY(-3px)}
+.stat:hover b{filter:drop-shadow(0 0 14px rgba(52,211,153,.4))}
+
+/* 跑马灯悬停暂停 */
+.marquee:hover .marquee-track{animation-play-state:paused}
+
+/* 大标语微光扫过 */
+.promo h2{
+  background:linear-gradient(100deg,rgba(255,255,255,.32) 0%,#fff 36%,#7ef0c8 50%,#fff 64%,rgba(255,255,255,.32) 100%);
+  background-size:230% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:title-shine 8s ease-in-out infinite;
+}
+
+/* 引用带主句渐变 */
+.quote-main{
+  background:linear-gradient(100deg,#ffffff,#a7f3d0 55%,#ffffff);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+
+/* 轮播箭头光晕 */
+.carousel-btn:hover{box-shadow:0 0 18px rgba(52,211,153,.35)}
+
+/* 购买卡悬停 */
+.buy-card{transition:transform .35s cubic-bezier(.22,1,.36,1),border-color .35s,box-shadow .35s}
+.buy-card:hover{transform:translateY(-6px);border-color:rgba(52,211,153,.3);box-shadow:0 26px 55px rgba(0,0,0,.45)}
+
+/* 减少动态偏好 */
+@media (prefers-reduced-motion:reduce){
+  .hero-grid,.btn-primary,.hero-title-line,.promo h2,.quote-band::before{animation:none!important}
+  .marquee-track{animation-duration:150s}
+}
 
 .promo{
   position:relative;padding:130px 0;overflow:hidden;text-align:center;
@@ -561,6 +642,24 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   background:rgba(255,255,255,.1);color:#fff;font-size:18px;transition:.2s;
 }
 .lightbox-close:hover{background:rgba(255,255,255,.22);transform:rotate(90deg)}
+
+.video-mask{
+  position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;padding:20px;
+  background:rgba(3,5,8,.92);backdrop-filter:blur(8px);
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.video-mask.show{opacity:1;pointer-events:auto}
+.video-box{width:100%;max-width:960px;position:relative}
+.video-box video{
+  width:100%;max-height:78vh;display:block;background:#000;border-radius:16px;
+  border:1px solid rgba(255,255,255,.12);box-shadow:0 40px 100px rgba(0,0,0,.7);
+}
+.video-close{position:absolute;top:-54px;right:0}
+.video-fallback{display:none;margin-top:18px;text-align:center;font-size:14px;color:var(--txt-2);line-height:1.9}
+.video-fallback b{color:var(--green)}
+.video-fallback a{color:var(--green);text-decoration:underline}
+.video-mask.novideo video{display:none}
+.video-mask.novideo .video-fallback{display:block}
 
 .reveal{opacity:0;transform:translateY(30px);transition:opacity .8s cubic-bezier(.22,1,.36,1),transform .8s cubic-bezier(.22,1,.36,1)}
 .reveal.visible{opacity:1;transform:none}
@@ -692,9 +791,13 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
           前往购买卡密
         </a>
-        <a class="btn btn-ghost" href="#systems">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          探索功能
+        <a class="btn btn-ghost" href="#gallery">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          预览功能
+        </a>
+        <a class="btn btn-ghost" href="tutorial.mp4" id="tutorialBtn">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+          使用教程
         </a>
       </div>
       <div class="hero-stats reveal" data-delay="5">
@@ -749,7 +852,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 <section class="section" id="features">
   <div class="container">
     <div class="section-head reveal">
-      <span class="section-tag">FEATURES</span>
+      <span class="section-tag"><i>01 /</i>FEATURES</span>
       <h2>为什么选择<span class="grad"> 世界盒子 </span>？</h2>
       <p>每一处 UI 细节，都经过反复打磨</p>
     </div>
@@ -787,7 +890,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 <section class="section section-alt" id="systems">
   <div class="container">
     <div class="section-head reveal">
-      <span class="section-tag">SYSTEMS</span>
+      <span class="section-tag"><i>02 /</i>SYSTEMS</span>
       <h2>五大<span class="grad"> 核心系统 </span></h2>
       <p>一站式覆盖你的世界盒子游玩旅程</p>
     </div>
@@ -874,15 +977,17 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 <section class="section" id="skins">
   <div class="container">
     <div class="section-head reveal">
-      <span class="section-tag">SKINS</span>
+      <span class="section-tag"><i>03 /</i>SKINS</span>
       <h2>4D / 5D <span class="grad"> 独家皮肤加载</span></h2>
       <p>全网独家独家新版本 4D 皮肤加载，特效拉满，惊艳全场</p>
     </div>
 
     <div class="skins-layout">
       <div class="glass skins-card reveal">
-        <div class="skins-media" data-ph="4D">
-          <img src="assets/shot-home.jpg" alt="4D 皮肤加载界面" loading="lazy" onerror="this.parentNode.classList.add('img-fallback');this.remove()" />
+        <div class="skins-media" id="skinCarousel4d" data-ph="4D">
+          <img id="skin4dImg" src="shot-4d-1.jpg" alt="4D 皮肤实机效果" loading="lazy" onerror="this.parentNode.classList.add('img-fallback');this.remove()" />
+          <button type="button" class="carousel-btn carousel-prev" id="skin4dPrev" aria-label="上一张"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <button type="button" class="carousel-btn carousel-next" id="skin4dNext" aria-label="下一张"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
           <span class="skins-media-tag">4D 皮肤加载</span>
         </div>
         <div class="skins-info">
@@ -897,7 +1002,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
       </div>
       <div class="glass skins-card reveal" data-delay="1">
         <div class="skins-media" data-ph="5D">
-          <img src="assets/shot-systems.jpg" alt="5D 皮肤展示界面" loading="lazy" onerror="this.parentNode.classList.add('img-fallback');this.remove()" />
+          <img src="shot-5d.jpg" alt="5D 皮肤实机效果" loading="lazy" onerror="this.parentNode.classList.add('img-fallback');this.remove()" />
           <span class="skins-media-tag">5D 皮肤</span>
         </div>
         <div class="skins-info">
@@ -917,7 +1022,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 <section class="section section-alt" id="gallery">
   <div class="container">
     <div class="section-head reveal">
-      <span class="section-tag">GALLERY</span>
+      <span class="section-tag"><i>04 /</i>GALLERY</span>
       <h2>界面<span class="grad"> 实机预览 </span></h2>
       <p>每一处 UI 细节，都经过反复打磨</p>
     </div>
@@ -949,7 +1054,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 <section class="section" id="buy">
   <div class="container">
     <div class="section-head reveal">
-      <span class="section-tag">GET STARTED</span>
+      <span class="section-tag"><i>05 /</i>GET STARTED</span>
       <h2>立即<span class="grad"> 获取世界盒子 </span></h2>
       <p>开启你的全新游玩体验</p>
     </div>
@@ -1038,7 +1143,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
       <a href="#buy">购买</a>
       <a href="https://o.8x.fit/shop/Redandroid.Worldbox" target="_blank" rel="noopener">官网</a>
       <a href="https://1846534480.share.123pan.cn/123pan/mViyTd-43d4d" target="_blank" rel="noopener">下载</a>
-      <a href="#" data-disclaimer>公告</a>
+      <a href="#" data-disclaimer>声明</a>
     </div>
     <div class="footer-disclaimer">
       <b>免责声明</b>
@@ -1091,6 +1196,17 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   <img src="" alt="预览大图" id="lightboxImg" />
 </div>
 
+<div class="video-mask" id="videoMask" aria-hidden="true">
+  <div class="video-box">
+    <button class="lightbox-close video-close" id="videoClose" aria-label="关闭">✕</button>
+    <video id="tutorialVideo" controls playsinline preload="none"></video>
+    <div class="video-fallback" id="videoFallback">
+      视频加载失败：请确认 <b>tutorial.mp4</b> 已和网页文件放在同一目录<br />
+      <a href="tutorial.mp4" target="_blank" rel="noopener">点这里直接打开 / 下载视频</a>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
   'use strict';
@@ -1112,6 +1228,43 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
       navLinks.classList.remove('open');
     });
   });
+
+  
+  function smoothScrollTo(targetY){
+    var doc = document.documentElement;
+    var startY = window.pageYOffset || doc.scrollTop || 0;
+    var dy = targetY - startY;
+    if(Math.abs(dy) < 2){ window.scrollTo(0, targetY); return; }
+    var dur = Math.min(900, 300 + Math.abs(dy) * 0.22);
+    var t0 = null;
+    doc.style.scrollBehavior = 'auto';
+    function step(ts){
+      if(t0 === null) t0 = ts;
+      var p = Math.min(1, (ts - t0) / dur);
+      var e = p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+      window.scrollTo(0, Math.round(startY + dy * e));
+      if(p < 1){ requestAnimationFrame(step); }
+      else { doc.style.scrollBehavior = ''; }
+    }
+    if(window.requestAnimationFrame){ requestAnimationFrame(step); }
+    else { window.scrollTo(0, targetY); doc.style.scrollBehavior = ''; }
+  }
+  var anchorLinks = document.querySelectorAll('a[href^="#"]');
+  for(var ai = 0; ai < anchorLinks.length; ai++){
+    anchorLinks[ai].addEventListener('click', function(e){
+      var href = this.getAttribute('href');
+      if(!href || href.length < 2) return;
+      var target = document.getElementById(href.slice(1));
+      if(!target) return;
+      e.preventDefault();
+      burger.classList.remove('open');
+      navLinks.classList.remove('open');
+      var navH = nav.offsetHeight || 64;
+      var y = target.getBoundingClientRect().top + (window.pageYOffset || document.documentElement.scrollTop || 0) - navH + 1;
+      smoothScrollTo(y);
+      try{ history.replaceState(null, '', href); }catch(err){ location.hash = href; }
+    });
+  }
 
   
   var io = new IntersectionObserver(function(entries){
@@ -1270,6 +1423,26 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
     render();
   })();
 
+  var SKIN4D_DATA = ['shot-4d-1.jpg', 'shot-4d-2.jpg', 'shot-4d-3.jpg'];
+  (function(){
+    var img = document.getElementById('skin4dImg');
+    var box = document.getElementById('skinCarousel4d');
+    if(!img || !box) return;
+    var cur = 0, total = SKIN4D_DATA.length;
+    function go(n){ cur = ((n % total) + total) % total; img.src = SKIN4D_DATA[cur]; }
+    document.getElementById('skin4dPrev').addEventListener('click', function(e){ e.stopPropagation(); go(cur - 1); });
+    document.getElementById('skin4dNext').addEventListener('click', function(e){ e.stopPropagation(); go(cur + 1); });
+    var sx = null;
+    box.addEventListener('touchstart', function(e){ sx = e.touches[0].clientX; });
+    box.addEventListener('touchend', function(e){
+      if(sx === null) return;
+      var dx = e.changedTouches[0].clientX - sx;
+      if(Math.abs(dx) > 40) go(dx > 0 ? cur - 1 : cur + 1);
+      sx = null;
+    });
+    for(var j = 0; j < total; j++){ var im = new Image(); im.src = SKIN4D_DATA[j]; }
+  })();
+
   var lb = document.getElementById('lightbox');
   var lbImg = document.getElementById('lightboxImg');
   document.querySelectorAll('.shot').forEach(function(fig){
@@ -1285,8 +1458,29 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   function closeLb(){ lb.classList.remove('show'); document.body.style.overflow=''; }
   document.getElementById('lightboxClose').addEventListener('click', closeLb);
   lb.addEventListener('click', function(e){ if(e.target === lb) closeLb(); });
+
+  
+  var videoMask = document.getElementById('videoMask');
+  var tutorialVideo = document.getElementById('tutorialVideo');
+  function openVideo(){
+    videoMask.classList.remove('novideo');
+    videoMask.classList.add('show');
+    videoMask.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+    if(!tutorialVideo.getAttribute('src')) tutorialVideo.src = 'tutorial.mp4';
+  }
+  function closeVideo(){
+    videoMask.classList.remove('show');
+    videoMask.setAttribute('aria-hidden','true');
+    try{ tutorialVideo.pause(); }catch(err){}
+    document.body.style.overflow = '';
+  }
+  document.getElementById('tutorialBtn').addEventListener('click', function(e){ e.preventDefault(); openVideo(); });
+  document.getElementById('videoClose').addEventListener('click', closeVideo);
+  videoMask.addEventListener('click', function(e){ if(e.target === videoMask) closeVideo(); });
+  tutorialVideo.addEventListener('error', function(){ videoMask.classList.add('novideo'); });
   document.addEventListener('keydown', function(e){
-    if(e.key === 'Escape'){ closeLb(); document.querySelectorAll('.disclaimer-mask.show').forEach(closeMask); }
+    if(e.key === 'Escape'){ closeLb(); closeVideo(); document.querySelectorAll('.disclaimer-mask.show').forEach(closeMask); }
   });
 
   
@@ -1365,4 +1559,5 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 </script>
 </body>
 </html>
+>
 </html>
