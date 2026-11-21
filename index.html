@@ -68,6 +68,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   will-change:transform;
 }
 .btn svg{flex-shrink:0}
+.btn-app-ic{width:20px;height:20px;border-radius:6px;flex-shrink:0;object-fit:cover}
 .btn:active{transform:scale(.96)}
 .btn-primary{
   background:var(--grad);color:#04110c;
@@ -1192,16 +1193,16 @@ a:focus-visible,button:focus-visible{outline:2px solid rgba(52,211,153,.65);outl
             前往123网盘下载
           </a>
           <a class="btn btn-kook btn-full" href="https://kook.vip/qgBGQn" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" width="18" height="18"><rect x="2" y="4.5" width="20" height="15" rx="5.5" fill="#ffffff"/><text x="12" y="15.4" text-anchor="middle" font-size="6.6" font-weight="900" letter-spacing=".4" fill="#000000" font-family="'Arial Black',Arial,sans-serif">KOOK</text></svg>
+            <img class="btn-app-ic" src="kook-icon.png" alt="" />
             加入KOOK频道
           </a>
           <a class="btn btn-tg btn-full" href="https://t.me/worldtools3369" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg>
             加入TG频道
           </a>
-          <a class="btn btn-qq btn-full" href="https://qm.qq.com/q/yJYF1gztx6" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C8.1 2 5 5.1 5 9v1.4c-1 .8-1.7 2-2 3.3-.5 2.2.2 4.2 1.7 5.4.3 3.2 2.9 5.4 6.3 5.4h2c3.4 0 6-2.2 6.3-5.4 1.5-1.2 2.2-3.2 1.7-5.4-.3-1.3-1-2.5-2-3.3V9c0-3.9-3.1-7-7-7zm0 2c2.8 0 5 2.2 5 5v1.7c-.6-.2-1.3-.3-2-.4-.3-.6-.6-1.2-1-1.7.7-1.4.2-3.2-1.1-4.1-.8.3-1.4.8-1.9 1.4-.5-.6-1.1-1.1-1.9-1.4-1.3.9-1.8 2.7-1.1 4.1-.4.5-.7 1.1-1 1.7-.7.1-1.4.2-2 .4V9c0-2.8 2.2-5 5-5z"/></svg>
-            加入QQ交流群 832809952
+          <a class="btn btn-qq btn-full" href="https://qm.qq.com/q/JmdsQjcHcs" id="qqBtn" rel="noopener">
+            <img class="btn-app-ic" src="qq-icon.png" alt="" />
+            加入QQ交流群
           </a>
           <p class="buy-copy-tip">入群注意「本群禁黄禁广」</p>
         </div>
@@ -1316,6 +1317,16 @@ a:focus-visible,button:focus-visible{outline:2px solid rgba(52,211,153,.65);outl
     <p>两个网盘内容一致，任选其一即可</p>
     <a class="btn btn-pan btn-full" href="https://1846534480.share.123pan.cn/123pan/mViyTd-43d4d" target="_blank" rel="noopener">点击前往神户的网盘下载</a>
     <a class="btn btn-pan btn-full" href="https://1819381391.share.123pan.cn/123pan/E169jv-Y4U1" target="_blank" rel="noopener">点击前往晴空网盘下载</a>
+  </div>
+</div>
+
+<div class="disclaimer-mask" id="qqMask" aria-hidden="true">
+  <div class="disclaimer-modal glass pan-modal" role="dialog" aria-modal="true" aria-labelledby="qqTitle">
+    <h3 id="qqTitle">加入QQ交流群</h3>
+    <p>任选一个群加入，群内同步更新</p>
+    <a class="btn btn-pan btn-full" href="https://qm.qq.com/q/JmdsQjcHcs" target="_blank" rel="noopener">点击加入一群 950407545</a>
+    <a class="btn btn-pan btn-full" href="https://qm.qq.com/q/p8ASuysqCA" target="_blank" rel="noopener">点击加入二群 730890231</a>
+    <a class="btn btn-pan btn-full" href="https://qm.qq.com/q/5W1w0mXP3i" target="_blank" rel="noopener">点击加入三群 832809952</a>
   </div>
 </div>
 
@@ -1463,6 +1474,13 @@ a:focus-visible,button:focus-visible{outline:2px solid rgba(52,211,153,.65);outl
     panBtn.addEventListener('click', function(e){
       e.preventDefault();
       openMask(document.getElementById('panMask'));
+    });
+  }
+  var qqBtn = document.getElementById('qqBtn');
+  if(qqBtn){
+    qqBtn.addEventListener('click', function(e){
+      e.preventDefault();
+      openMask(document.getElementById('qqMask'));
     });
   }
 
